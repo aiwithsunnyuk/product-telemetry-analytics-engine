@@ -1,0 +1,17 @@
+name: 'product_telemetry_analytics'
+version: '1.0.0'
+config-version: 2
+
+profile: 'product_telemetry'
+
+model-paths: ["sql/views"]
+test-paths: ["tests"]
+seed-paths: ["data"]
+
+models:
+  product_telemetry_analytics:
+    materialized: view
+    staging:
+      materialized: view
+    marts:
+      materialized: table

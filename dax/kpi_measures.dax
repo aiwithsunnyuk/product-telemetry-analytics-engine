@@ -1,0 +1,79 @@
+// ==============================================================================
+// PRODUCT TELEMETRY & LIFECYCLE INTELLIGENCE: DAX MEASURES LIBRARY
+// Designed for Power BI Star Schema (fact_user_events -> dim_features, dim_dates)
+// ==============================================================================
+
+// ------------------------------------------------------------------------------
+// 1. ACTIVE USAGE RATIOS (Stickiness / Engagement)
+// ------------------------------------------------------------------------------
+
+[DAU] = 
+DISTINCTCOUNT(fact_user_events[user_id])
+
+[WAU] = 
+CALCULATE(
+    DISTINCTCOUNT(fact_user_events[user_id]),
+    DATESINPERIOD(dim_date[Date], MAX(dim_date[Date]), -7, DAY)
+)
+
+[MAU] = 
+CALCULATE(
+    DISTINCTCOUNT(fact_user_events[user_id]),
+    DATESINPERIOD(dim_date[Date], MAX(dim_date[Date]), -30, DAY)
+)
+
+[Product Stickiness (DAU / MAU Ratio)] = 
+DIVIDE([DAU], [MAU], 0)
+
+[WAU / MAU Ratio] = 
+DIVIDE([WAU], [MAU], 0)
+
+// ------------------------------------------------------------------------------
+// 2. FEATURE ADOPTION CURVES
+// ------------------------------------------------------------------------------
+
+[Total Feature Invocations] = 
+COUNTROWS(fact_user_events)
+
+[Unique Feature Adopters] = 
+DISTINCTCOUNT(fact_user_events[user_id])
+
+[Feature Penetration Rate %] = 
+DIVIDE([Unique Feature Adopters], [MAU], 0) * 100
+
+[Sprint Velocity Impact %] = 
+VAR PreviousSprintUsage = 
+    CALCULATE(
+        [Total Feature Invocations],
+        DATEADD(dim_date[Date], -14, DAY)
+    )
+RETURN
+    DIVIDE([Total Feature Invocations] - PreviousSprintUsage, PreviousSprintUsage, 0) * 100
+
+// ------------------------------------------------------------------------------
+// 3. CONVERSION FUNNEL & DROP-OFF
+// ------------------------------------------------------------------------------
+
+[Funnel Step 1 - Session Start] = 
+CALCULATE(
+    DISTINCTCOUNT(fact_user_events[session_id]), 
+    fact_user_events[event_name] = "session_start"
+)
+
+[Funnel Step 2 - Feature Discovered] = 
+CALCULATE(
+    DISTINCTCOUNT(fact_user_events[session_id]), 
+    fact_user_events[event_name] = "feature_view"
+)
+
+[Funnel Step 3 - Core Action Complete] = 
+CALCULATE(
+    DISTINCTCOUNT(fact_user_events[session_id]), 
+    fact_user_events[event_name] = "action_completed"
+)
+
+[Funnel Conversion Rate %] = 
+DIVIDE([Funnel Step 3 - Core Action Complete], [Funnel Step 1 - Session Start], 0) * 100
+
+[Funnel Step Drop-Off Rate %] = 
+100 - [Funnel Conversion Rate %]

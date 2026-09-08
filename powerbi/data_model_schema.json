@@ -1,0 +1,58 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/reportExtension/1.0.0/schema.json",
+  "name": "ProductTelemetryModel",
+  "compatibilityLevel": 1567,
+  "tables": [
+    {
+      "name": "fact_user_events",
+      "columns": [
+        {"name": "event_id", "dataType": "string"},
+        {"name": "user_id", "dataType": "string"},
+        {"name": "feature_id", "dataType": "int64"},
+        {"name": "cohort_id", "dataType": "int64"},
+        {"name": "session_id", "dataType": "string"},
+        {"name": "event_name", "dataType": "string"},
+        {"name": "client_platform", "dataType": "string"},
+        {"name": "duration_ms", "dataType": "int64"},
+        {"name": "event_timestamp", "dataType": "dateTime"},
+        {"name": "event_date", "dataType": "dateTime"}
+      ]
+    },
+    {
+      "name": "dim_features",
+      "columns": [
+        {"name": "feature_id", "dataType": "int64"},
+        {"name": "feature_key", "dataType": "string"},
+        {"name": "feature_name", "dataType": "string"},
+        {"name": "product_module", "dataType": "string"},
+        {"name": "tier", "dataType": "string"},
+        {"name": "release_sprint", "dataType": "string"}
+      ]
+    },
+    {
+      "name": "dim_cohorts",
+      "columns": [
+        {"name": "cohort_id", "dataType": "int64"},
+        {"name": "cohort_month", "dataType": "dateTime"},
+        {"name": "cohort_tier", "dataType": "string"},
+        {"name": "acquisition_channel", "dataType": "string"}
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "fromTable": "fact_user_events",
+      "fromColumn": "feature_id",
+      "toTable": "dim_features",
+      "toColumn": "feature_id",
+      "cardinality": "manyToOne"
+    },
+    {
+      "fromTable": "fact_user_events",
+      "fromColumn": "cohort_id",
+      "toTable": "dim_cohorts",
+      "toColumn": "cohort_id",
+      "cardinality": "manyToOne"
+    }
+  ]
+}
